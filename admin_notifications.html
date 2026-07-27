@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Notifications</h2>
+        </div>
+        <div class="card-body">
+            {% if notifications %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notification in notifications %}
+                        <tr class="{% if notification.type == 'inventory' %}table-warning{% elif notification.type == 'sale' %}table-success{% endif %}">
+                            <td>{{ notification.timestamp }}</td>
+                            <td>
+                                {% if notification.type == 'inventory' %}
+                                    <span class="badge bg-warning text-dark">Inventory</span>
+                                {% elif notification.type == 'sale' %}
+                                    <span class="badge bg-success">Sale</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ notification.type|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ notification.message }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center">No notifications found.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %} 

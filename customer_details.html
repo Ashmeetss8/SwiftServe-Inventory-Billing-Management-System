@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Customer Details</h2>
+    <form method="POST" action="{{ url_for('customer_details') }}">
+        <div class="form-group">
+            <label for="customer_name">Customer Name:</label>
+            <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+        </div>
+        <div class="form-group">
+            <label for="customer_phone">Customer Phone:</label>
+            <input type="tel" class="form-control" id="customer_phone" name="customer_phone" required>
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Complete Purchase</button>
+        <a href="{{ url_for('employee_dashboard') }}" class="btn btn-secondary mt-3">Back to Cart</a>
+    </form>
+</div>
+{% endblock %} 

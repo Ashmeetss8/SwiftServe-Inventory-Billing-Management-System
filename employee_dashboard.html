@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Dashboard - Smart Inventory Management{% endblock %}
+
+{% block sidebar %}
+<nav class="col-md-3 col-lg-2 d-md-block bg-gradient sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('employee_dashboard') }}">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Sales
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('employee_notifications') }}">
+                    <i class="fas fa-bell me-2"></i>
+                    Notifications
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('search_bill') }}">
+                    <i class="fas fa-search me-2"></i>
+                    Search Bills
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Barcode Scanner Section -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-barcode me-2"></i>
+                        Scan Product
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div id="cameraStatus" class="alert alert-info">Initializing camera...</div>
+                    </div>
+                    <div id="interactive" class="viewport mb-3">
+                        <!-- Camera will be inserted here -->
+                    </div>
+                    <form method="POST" action="{{ url_for('add_item') }}" id="barcodeForm">
+                        <div class="form-group mb-3">
+                            <label for="barcode">Barcode:</label>
+                            <input type="text" class="form-control" id="barcode" name="barcode" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="quantity">Quantity:</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Scanner Status Card -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div id="scannerStatus" class="text-center">
+                        <span class="badge bg-secondary">Scanner Inactive</span>
+                    </div>
+                    <div id="lastScanned" class="text-center mt-2 small text-muted"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping Cart Section -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shopping-cart me-2"></i>
+                        Shopping Cart
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if cart %}
+                    <form method="POST" action="{{ url_for('update_cart') }}">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Discount</th>
+                                        <th>Tax</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td>₹{{ '%.2f'|format(item.selling_price) }}</td>
+                                        <td>₹{{ '%.2f'|format(item.discount) }}</td>
+                                        <td>{{ '%.1f'|format(item.tax_rate) }}%</td>
+                                        <td>₹{{ '%.2f'|format(item.total) }}</td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('remove_item') }}" style="display: inline;">
+                                                <input type="hidden" name="barcode" value="{{ item.barcode }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5" class="text-end"><strong>Total Amount:</strong></td>
+                                        <td colspan="2"><strong>₹{{ '%.2f'|format(total_amount) }}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="submit" class="btn btn-secondary me-2">
+                                <i class="fas fa-trash-alt me-2"></i>
+                                Clear Cart
+                            </button>
+                            <a href="{{ url_for('customer_details') }}" class="btn btn-primary">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Proceed to Checkout
+                            </a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart text-muted" style="font-size: 48px;"></i>
+                        <p class="text-muted mt-3">Your cart is empty.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    #interactive.viewport {
+        position: relative;
+        width: 300px !important;
+        height: 300px !important;
+        margin: auto;
+        overflow: hidden;
+        background: #000;
+    }
+
+    #interactive.viewport > video,
+    #interactive.viewport > canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .drawingBuffer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .scanner-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.5),
+            transparent 30%,
+            transparent 70%,
+            rgba(0, 0, 0, 0.5)
+        );
+        z-index: 2;
+    }
+
+    .scanner-laser {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: rgba(255, 0, 0, 0.5);
+        z-index: 3;
+        box-shadow: 0 0 4px red;
+        animation: scan 2s infinite;
+    }
+
+    @keyframes scan {
+        0% { top: 30%; }
+        50% { top: 70%; }
+        100% { top: 30%; }
+    }
+
+    .alert {
+        margin: 10px;
+        padding: 10px;
+        border-radius: 4px;
+    }
+
+    .alert-info {
+        background-color: #cce5ff;
+        border-color: #b8daff;
+        color: #004085;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script>
+    var lastCode = "";
+    var isScanning = false;
+    
+    function updateStatus(message, type = 'info') {
+        const statusDiv = document.getElementById('cameraStatus');
+        statusDiv.className = `alert alert-${type}`;
+        statusDiv.textContent = message;
+        
+        // Update scanner status badge
+        const scannerStatus = document.getElementById('scannerStatus');
+        if (scannerStatus) {
+            const badge = scannerStatus.querySelector('.badge') || document.createElement('span');
+            badge.className = 'badge ' + (type === 'success' ? 'bg-success' : 
+                                       type === 'danger' ? 'bg-danger' : 'bg-secondary');
+            badge.textContent = type === 'success' ? 'Scanner Active' : 'Scanner Inactive';
+            if (!scannerStatus.querySelector('.badge')) {
+                scannerStatus.appendChild(badge);
+            }
+        }
+    }
+
+    function stopQuagga() {
+        if (isScanning) {
+            try {
+                Quagga.stop();
+                isScanning = false;
+                updateStatus('Scanner stopped', 'info');
+            } catch (err) {
+                console.error('Error stopping Quagga:', err);
+            }
+        }
+    }
+
+    function initQuagga() {
+        updateStatus('Initializing camera...', 'info');
+        console.log('Starting Quagga initialization...');
+
+        // Stop any existing instance
+        stopQuagga();
+
+        const viewport = document.getElementById('interactive');
+        
+        try {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: viewport,
+                    constraints: {
+                        width: { min: 300, ideal: 1280, max: 1920 },
+                        height: { min: 300, ideal: 720, max: 1080 },
+                        aspectRatio: { min: 1, max: 2 },
+                        facingMode: "environment",
+                        focusMode: "continuous"
+                    },
+                    area: {
+                        top: "0%",
+                        right: "0%",
+                        left: "0%",
+                        bottom: "0%"
+                    }
+                },
+                decoder: {
+                    readers: [
+                        "ean_reader",
+                        "ean_8_reader",
+                        "code_128_reader",
+                        "code_39_reader",
+                        "upc_reader"
+                    ],
+                    debug: {
+                        drawBoundingBox: true,
+                        showPattern: true
+                    }
+                },
+                locate: true,
+                frequency: 10
+            }, function(err) {
+                if (err) {
+                    console.error('Quagga initialization error:', err);
+                    updateStatus('Camera error: ' + (err.message || 'Failed to initialize'), 'danger');
+                    return;
+                }
+
+                console.log('Quagga initialized successfully');
+                
+                try {
+                    Quagga.start();
+                    isScanning = true;
+                    updateStatus('Camera active - Ready to scan', 'success');
+                    
+                    // Add scanner overlay
+                    const overlay = document.createElement('div');
+                    overlay.className = 'scanner-overlay';
+                    const laser = document.createElement('div');
+                    laser.className = 'scanner-laser';
+                    overlay.appendChild(laser);
+                    viewport.appendChild(overlay);
+
+                    // Adjust video element style after a short delay
+                    setTimeout(() => {
+                        const video = viewport.querySelector('video');
+                        if (video) {
+                            video.style.objectFit = 'cover';
+                            video.style.width = '100%';
+                            video.style.height = '100%';
+                        }
+                    }, 1000);
+
+                } catch (startErr) {
+                    console.error('Error starting Quagga:', startErr);
+                    updateStatus('Error starting camera: ' + startErr.message, 'danger');
+                }
+            });
+
+            // Handle successful scans
+            Quagga.onDetected(function(result) {
+                var code = result.codeResult.code;
+                console.log('Detection result:', result);
+                
+                if (code && code !== lastCode) {
+                    console.log('Barcode detected:', code);
+                    console.log('Barcode type:', result.codeResult.format);
+                    console.log('Detection confidence:', result.codeResult.confidence);
+                    
+                    // Update the form
+                    document.getElementById('barcode').value = code;
+                    document.querySelector("#barcodeForm input[name='quantity']").value = 1;
+                    
+                    // Show success message
+                    updateStatus('Barcode detected: ' + code + ' (' + result.codeResult.format + ')', 'success');
+                    
+                    // Play a success sound
+                    const audio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjI5LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAUAAAiSAAYGBgYJCQkJCQwMDAwMDw8PDw8SUlJSUlVVVVVVWFhYWFhbW1tbW15eXl5eYaGhoaGkpKSkpKenp6enqqqqqqqtra2trbDw8PDw8/Pz8/P29vb29vn5+fn5/Pz8/Pz//////8AAAAATGF2YzU4LjU0AAAAAAAAAAAAAAAAJAAAAAAAAAAAIkjG8J+3AAAAAAAAAAAAAAAAAAAA//MUZAAAAAGkAAAAAAAAA0gAAAAATEFN//MUZAMAAAGkAAAAAAAAA0gAAAAARTMu//MUZAYAAAGkAAAAAAAAA0gAAAAAT0xB//MUZAkAAAGkAAAAAAAAA0gAAAAAVVJF//MUZAwAAAGkAAAAAAAAA0gAAAAAUExB//MUZA8AAAGkAAAAAAAAA0gAAAAAWTMu//MUZBIAAAGkAAAAAAAAA0gAAAAAUy8x//MUZBUAAAGkAAAAAAAAA0gAAAAALTEy//MUZBgAAAGkAAAAAAAAA0gAAAAALjIz//MUZBsAAAGkAAAAAAAAA0gAAAAALjM0//MUZBgAAAGkAAAAAAAAA0gAAAAANFVV');
+                    audio.play().catch(function(error) {
+                        console.log("Audio play failed:", error);
+                    });
+                    
+                    lastCode = code;
+                    
+                    // Auto-submit the form
+                    document.getElementById('barcodeForm').submit();
+                    
+                    setTimeout(function() {
+                        lastCode = "";
+                    }, 3000);
+                }
+            });
+
+            // Add visual feedback for processing
+            Quagga.onProcessed(function(result) {
+                var drawingCtx = Quagga.canvas.ctx.overlay,
+                    drawingCanvas = Quagga.canvas.dom.overlay;
+
+                if (result) {
+                    if (result.boxes) {
+                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                        result.boxes.filter(function (box) {
+                            return box !== result.box;
+                        }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "yellow", lineWidth: 2});
+                        });
+                    }
+
+                    if (result.box) {
+                        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+                    }
+
+                    if (result.codeResult && result.codeResult.code) {
+                        Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error in Quagga initialization:', error);
+            updateStatus('Error initializing camera: ' + error.message, 'danger');
+        }
+    }
+
+    // Start camera when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            updateStatus('Camera access not supported in this browser', 'danger');
+            return;
+        }
+
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: "environment",
+                width: { min: 300, ideal: 1280, max: 1920 },
+                height: { min: 300, ideal: 720, max: 1080 },
+                aspectRatio: { min: 1, max: 2 }
+            } 
+        })
+        .then(function(stream) {
+            // Don't stop the stream, let it continue
+            initQuagga();
+        })
+        .catch(function(err) {
+            console.error('Camera access error:', err);
+            updateStatus('Camera access denied or error: ' + err.message, 'danger');
+        });
+    });
+
+    // Clean up when leaving the page
+    window.addEventListener('beforeunload', function() {
+        stopQuagga();
+    });
+
+    // Function to update totals on the client side when quantity changes
+    function updateTotals() {
+        let overallTotal = 0;
+        document.querySelectorAll("tr[data-barcode]").forEach(function(row) {
+            const qtyInput = row.querySelector(".qty-input");
+            const qty = parseFloat(qtyInput.value);
+            const selling_price = parseFloat(qtyInput.getAttribute("data-selling_price"));
+            const discount = parseFloat(qtyInput.getAttribute("data-discount"));
+            const tax_rate = parseFloat(qtyInput.getAttribute("data-tax_rate"));
+            const price_after_discount = selling_price - discount;
+            const tax_amount = price_after_discount * tax_rate / 100;
+            const rowTotal = (price_after_discount + tax_amount) * qty;
+            row.querySelector(".row-total").innerText = rowTotal.toFixed(2);
+            overallTotal += rowTotal;
+        });
+        document.getElementById("overall-total").innerText = overallTotal.toFixed(2);
+    }
+
+    // AJAX function to update single item quantity in the session cart
+    function updateItemQuantity(barcode, inputElement) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('update_item') }}", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onload = function() {
+            if (xhr.status === 200 && xhr.responseText === "success") {
+                updateTotals();
+            } else {
+                alert("Error updating quantity.");
+            }
+        };
+        xhr.send("barcode=" + encodeURIComponent(barcode) + "&quantity=" + encodeURIComponent(inputElement.value));
+    }
+
+    // Function to delete an item row via AJAX
+    function deleteItem(barcode, btnElement) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('remove_item') }}", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.onload = function () {
+            if (xhr.status === 200 && xhr.responseText === "success") {
+                var row = btnElement.closest("tr");
+                row.parentNode.removeChild(row);
+                updateTotals();
+            } else {
+                alert("Error removing item.");
+            }
+        };
+        xhr.send("barcode=" + encodeURIComponent(barcode));
+    }
+</script>
+{% endblock %}
+{% endblock %} 

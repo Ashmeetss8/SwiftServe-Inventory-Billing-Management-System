@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}View Bill - Sale #{{ bill.sale_id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid bill-container">
+    <!-- Print Controls - Hide when printing -->
+    <div class="no-print mb-3">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print me-2"></i>Print Bill
+        </button>
+        {% if user_type == 'employee' %}
+        <a href="{{ url_for('employee_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        {% elif user_type == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+        {% endif %}
+        <a href="{{ url_for('search_bill') }}" class="btn btn-info">
+            <i class="fas fa-search me-2"></i>Search Bills
+        </a>
+    </div>
+
+    <!-- Bill Content -->
+    <div class="bill-content">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="company-name">SWIFTSERVE</h2>
+            <p class="mb-0">Smart Inventory Management</p>
+            <hr class="my-2">
+        </div>
+
+        <!-- Bill Information -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <h5>Sale Details:</h5>
+                <p class="mb-1">Sale ID: {{ bill.sale_id }}</p>
+                <p class="mb-1">Date: {{ bill.date }}</p>
+                <p class="mb-1">Salesperson: {{ bill.salesperson }}</p>
+            </div>
+            <div class="col-6">
+                <h5>Customer Details:</h5>
+                <p class="mb-1">Name: {{ bill.customer_name }}</p>
+                <p class="mb-1">Phone: {{ bill.customer_phone }}</p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-end">Discount</th>
+                        <th class="text-end">Tax</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in bill.cart_items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">₹{{ '%.2f'|format(item.selling_price) }}</td>
+                        <td class="text-end">₹{{ '%.2f'|format(item.discount) }}</td>
+                        <td class="text-end">₹{{ '%.2f'|format(item.tax) }}</td>
+                        <td class="text-end">₹{{ '%.2f'|format(item.total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-end"><strong>Grand Total:</strong></td>
+                        <td class="text-end"><strong>₹{{ '%.2f'|format(bill.total) }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4">
+            <p class="mb-1">Thank you for your business!</p>
+            <p class="small">For any queries, please contact us.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* General Styles */
+    .bill-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .bill-content {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .company-name {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    /* Table Styles */
+    .table {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+    }
+
+    /* Print Specific Styles */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .bill-container {
+            padding: 0;
+        }
+
+        .bill-content {
+            box-shadow: none;
+            padding: 0;
+        }
+
+        .table {
+            font-size: 12px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container-fluid {
+            padding: 15px;
+        }
+
+        /* Ensure page breaks don't occur within elements */
+        table { page-break-inside: avoid; }
+        tr { page-break-inside: avoid; }
+        td { page-break-inside: avoid; }
+
+        /* Remove unnecessary margins and paddings */
+        .table td, .table th {
+            padding: 0.5rem;
+        }
+
+        /* Ensure footer stays at bottom */
+        .bill-content {
+            position: relative;
+            min-height: 95vh;
+        }
+
+        /* Force background colors and text colors in print */
+        .table th {
+            background-color: #f8f9fa !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Search Bill - Smart Inventory Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Search Bill
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-info">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('search_bill') }}">
+                        <div class="form-group mb-3">
+                            <label for="sale_id" class="form-label">Bill/Sale ID:</label>
+                            <input type="number" class="form-control" id="sale_id" name="sale_id" 
+                                   required min="1" placeholder="Enter Bill Number">
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>
+                                Search Bill
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Back buttons -->
+            <div class="mt-3 text-center">
+                {% if session.user_type == 'employee' %}
+                    <a href="{{ url_for('employee_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Dashboard
+                    </a>
+                {% elif session.user_type == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Back to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %} 

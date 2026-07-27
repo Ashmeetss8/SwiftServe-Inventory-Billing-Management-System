@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Home - SwiftServe Inventory Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-10">
+            <div class="text-center mb-5 welcome-text">
+                <!-- SwiftServe Logo -->
+                <div class="logo-container mb-4">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SwiftServe Logo" class="swift-serve-logo" width="120">
+                    <h1 class="display-4 fw-bold mb-3 text-white">SWIFTSERVE</h1>
+                </div>
+                <p class="lead text-light">Streamlined Inventory Management Solution</p>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <!-- Employee Portal Card -->
+                <div class="col-md-6">
+                    <div class="card h-100 portal-card glass-effect">
+                        <div class="card-body text-center p-5">
+                            <div class="portal-icon mb-4">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h2 class="card-title h3 mb-3 text-white">Employee Portal</h2>
+                            <p class="card-text text-light mb-4">
+                                Access the sales system and manage customer transactions.
+                            </p>
+                            <a href="{{ url_for('employee_login') }}" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Employee Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Portal Card -->
+                <div class="col-md-6">
+                    <div class="card h-100 portal-card glass-effect">
+                        <div class="card-body text-center p-5">
+                            <div class="portal-icon mb-4">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <h2 class="card-title h3 mb-3 text-white">Admin Portal</h2>
+                            <p class="card-text text-light mb-4">
+                                Manage inventory, employees, and view business analytics.
+                            </p>
+                            <a href="{{ url_for('admin_login') }}" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Admin Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --swift-blue: #0088cc;
+        --swift-black: #000000;
+    }
+
+    /* Add background image with overlay */
+    body {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1374&q=80');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    .container {
+        position: relative;
+    }
+
+    /* Glass effect for cards */
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important;
+    }
+
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .swift-serve-logo {
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) brightness(1.2);
+        animation: logoFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .display-4 {
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .lead {
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .portal-card {
+        border: none;
+        transition: all 0.3s ease;
+        border-radius: 1.5rem;
+        overflow: hidden;
+    }
+
+    .portal-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .portal-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: white;
+        font-size: 2.5rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .portal-card:hover .portal-icon {
+        transform: scale(1.1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-light {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Add animation to cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .portal-card {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .col-md-6:nth-child(2) .portal-card {
+        animation-delay: 0.2s;
+    }
+</style>
+{% endblock %} 
